@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'GistDrop' target in the 'GistDrop' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
