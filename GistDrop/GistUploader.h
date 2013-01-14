@@ -18,8 +18,8 @@ typedef void (^GistUploaderResponseBlock)(Gist*);
 
 -(id) initForUser:(NSString*)username password:(NSString*) password;
 
--(BOOL) postText:(NSString*) text callback:(GistUploaderResponseBlock) callback;
--(BOOL) postFileAtURL:(NSURL*) url callback:(GistUploaderResponseBlock) callback;
+-(BOOL) postText:(NSString*) text filename:(NSString*) filename description:(NSString*)description callback:(GistUploaderResponseBlock) callback;
+-(BOOL) postFileAtURL:(NSURL*) url description:(NSString*)description callback:(GistUploaderResponseBlock) callback;
 
 
 @end

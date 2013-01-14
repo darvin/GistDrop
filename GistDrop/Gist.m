@@ -9,14 +9,18 @@
 #import "Gist.h"
 
 @implementation Gist
-@synthesize url=_url, rawUrl=_rawUrl, filename=_filename, gistType=_gistType, gitRepo=_gitRepo, public=_public,fileType=_fileType;
+@synthesize url=_url, rawUrl=_rawUrl, filename=_filename, gistType=_gistType, gitRepo=_gitRepo, public=_public,fileType=_fileType, mimestring=_mimestring;
 
 -(id) initWithGithubEngineResponse:(NSDictionary*) dict {
     if ((self=[super init])) {
         _url = dict[@"html_url"];
         NSDictionary *files = dict[@"files"];
         NSDictionary * fileDict = files[[[files allKeys] lastObject]];
-        NSLog(@"");
+        _rawUrl = [NSURL URLWithString:fileDict[@"raw_url"]];
+        _filename = fileDict[@"filename"];
+        _fileType = fileDict[@"language"];
+        _mimestring = fileDict[@"type"];
+        _public = [dict[@"public"] boolValue];
     }
     return self;
 }

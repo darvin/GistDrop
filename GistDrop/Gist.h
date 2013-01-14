@@ -22,6 +22,7 @@ typedef enum {
 @property (readonly) NSString* fileType;
 @property (readonly) GistType gistType;
 @property (readonly) BOOL public;
+@property (strong, readonly) NSString* mimestring;
 
 -(id) initWithGithubEngineResponse:(NSDictionary*) dict;
 

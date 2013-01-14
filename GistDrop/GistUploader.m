@@ -22,12 +22,18 @@
 }
 
 
--(BOOL) postText:(NSString*) text callback:(GistUploaderResponseBlock) callback {
+-(BOOL) postText:(NSString*) text filename:(NSString*) filename description:(NSString*)description callback:(GistUploaderResponseBlock) callback {
+    if (!filename) {
+        filename = @"file.txt"; //TODO autodetect file type
+        
+    }
+    
+    
     NSDictionary* gistDict = @{
-        @"description": @"the description for this gist",
+    @"description": description?description:@"",
         @"public": @YES,
         @"files": @{
-            @"file1.txt": @{
+            filename: @{
                 @"content": text
             }
         }
