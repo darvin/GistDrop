@@ -8,7 +8,10 @@
 
 #import "GistUploader.h"
 #import <UAGithubEngine/UAGithubEngine.h>
+#import <taskit/Taskit.h>
 #import "Gist.h"
+
+
 @implementation GistUploader {
     UAGithubEngine* _engine;
 }
@@ -42,11 +45,96 @@
     
     [_engine createGist:gistDict success:^(id response) {
         Gist* gist = [[Gist alloc] initWithGithubEngineResponse:[response lastObject]];
-        callback(gist);
+        callback(nil, gist);
     } failure:^(NSError *error) {
         NSLog(@"Error: %@", error);
-        callback(nil);
+        callback(error, nil);
     }];
+    return YES;
+}
+
+-(NSString*) launchExec:(NSString*)exePath withArguments:(NSArray*) arguments inDirectory:(NSString*) directory {
+    NSTask *task = [NSTask new];
+    [task setLaunchPath:exePath];
+    [task setArguments:arguments];
+    if ([directory length])
+        [task setCurrentDirectoryPath:directory];
+    
+    NSPipe *pipe = [NSPipe pipe];
+    [task setStandardOutput:pipe];
+    
+    [task launch];
+    
+    NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile];
+    
+    [task waitUntilExit];
+    
+    NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    return string;
+}
+
+-(NSString*) createTemporaryDirectory {
+    NSString *tempDirectoryTemplate =
+    [NSTemporaryDirectory() stringByAppendingPathComponent:@"myapptempdirectory.XXXXXX"];
+    const char *tempDirectoryTemplateCString =
+    [tempDirectoryTemplate fileSystemRepresentation];
+    char *tempDirectoryNameCString =
+    (char *)malloc(strlen(tempDirectoryTemplateCString) + 1);
+    strcpy(tempDirectoryNameCString, tempDirectoryTemplateCString);
+    
+    char *result = mkdtemp(tempDirectoryNameCString);
+    if (!result)
+    {
+        return nil;
+    }
+    
+    NSString *tempDirectoryPath =
+    [[NSFileManager defaultManager]
+     stringWithFileSystemRepresentation:tempDirectoryNameCString
+     length:strlen(result)];
+    free(tempDirectoryNameCString);
+    return tempDirectoryPath;
+}
+
+-(void) updateRepo:(NSString*)gitRepoUrl fileNamed:(NSString*)filename withContentsOfURL:(NSURL*) url callback:(void (^)(NSError*)) callback {
+    if (![gitRepoUrl length]) {
+        callback([NSError errorWithDomain:@"gistdrop" code:1 userInfo:@{NSLocalizedDescriptionKey:@"git repo link suppose to be here"}]);
+        return;
+    }
+    NSString* git = [[NSBundle mainBundle] pathForResource:@"git" ofType:nil inDirectory:@"git/bin/"];
+    
+    git = [[self launchExec:@"/usr/bin/which" withArguments:@[@"git"] inDirectory:nil] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    
+    
+    NSString* td = [self createTemporaryDirectory];
+    
+    if (![td length]) {
+        callback([NSError errorWithDomain:@"gistdrop" code:2 userInfo:@{NSLocalizedDescriptionKey:@"temporary directory cannot be created"}]);
+        return;
+    };
+
+    
+    NSString *gitClone = [self launchExec:git withArguments:@[@"clone", gitRepoUrl, @"./"] inDirectory:td];
+    
+    
+    NSLog(@"done");
+}
+
+
+-(BOOL) postFileAtURL:(NSURL *)url description:(NSString *)description callback:(GistUploaderResponseBlock)callback {
+    NSString* filename = [url lastPathComponent];
+    [self postText:@"--this is temporary content--" filename:filename description:description callback:^(NSError *error, Gist *g) {
+        if (error)
+            callback(error,nil);
+        else
+            [self updateRepo:g.gitRepo fileNamed:filename withContentsOfURL:url callback:^(NSError* error){
+            if (error)
+                callback(error,nil);
+            else
+                callback(nil, g);
+        }];
+    }];
+    
     return YES;
 }
 

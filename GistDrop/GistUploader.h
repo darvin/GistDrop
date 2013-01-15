@@ -10,7 +10,7 @@
 @class UAGithubEngine;
 @class Gist;
 
-typedef void (^GistUploaderResponseBlock)(Gist*);
+typedef void (^GistUploaderResponseBlock)(NSError*, Gist*);
 
 @interface GistUploader : NSObject
 @property (strong, nonatomic, readonly) UAGithubEngine* engine;

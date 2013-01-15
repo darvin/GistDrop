@@ -21,6 +21,10 @@
         _fileType = fileDict[@"language"];
         _mimestring = fileDict[@"type"];
         _public = [dict[@"public"] boolValue];
+        
+        _gitRepo = dict[@"git_push_url"];
+        //FIXME for some reason GitHub api gives wrong url for push
+        _gitRepo = [NSString stringWithFormat:@"git@gist.github.com:%@.git", dict[@"id"] ];
     }
     return self;
 }
