@@ -30,7 +30,7 @@
 {    
     [super tearDown];
 }
-/*
+
 - (void)testUploadSmallTextFragment
 {
     NSString * filename = @"hello.rb";
@@ -53,7 +53,7 @@
     STAssertEqualObjects(gist.filename, filename, @"suppose to be named properly");
     NSLog(@"done");
 }
-*/
+
 - (void)testUploadImage
 {
     NSString * filename = @"git-logo.png";

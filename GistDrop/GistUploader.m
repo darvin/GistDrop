@@ -114,10 +114,34 @@
     };
 
     
-    NSString *gitClone = [self launchExec:git withArguments:@[@"clone", gitRepoUrl, @"./"] inDirectory:td];
+    NSString * cmdRes = nil;
+    cmdRes = [self launchExec:git withArguments:@[@"clone", gitRepoUrl, @"./"] inDirectory:td];
+    NSLog(@"GIT: %@",cmdRes);
+    
+    
+    NSError* error;
+    NSString* resultPath = [td stringByAppendingPathComponent:filename];
+    [[NSFileManager defaultManager] removeItemAtPath:resultPath error:&error];
+    if (error) {
+        callback(error);
+        return;
+    }
+    [[NSFileManager defaultManager] copyItemAtPath:[url path] toPath:resultPath error:&error];
+    if (error) {
+        callback(error);
+        return;
+    }
+
+    
+    cmdRes = [self launchExec:git withArguments:@[@"commit", @"-am", @"Uploaded"] inDirectory:td];
+    NSLog(@"GIT: %@",cmdRes);
+    
+    cmdRes = [self launchExec:git withArguments:@[@"push"] inDirectory:td];
+    NSLog(@"GIT: %@",cmdRes);
     
     
     NSLog(@"done");
+    callback(nil);
 }
 
 
